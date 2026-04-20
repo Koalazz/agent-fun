@@ -118,19 +118,19 @@ export default function Terminal({ task, basePath }: Props) {
   return (
     <div className="h-full flex flex-col bg-[#06101a]">
       <div className="flex items-center justify-between px-2 py-1 border-b border-line text-[10px] uppercase tracking-widest font-display">
-        <div className="flex items-center gap-3">
-          <span className="text-text-dim">SESSION</span>
-          <span className="font-mono text-accent-amberBright normal-case tracking-normal">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-text-dim shrink-0">SESSION</span>
+          <span className="font-mono text-accent-amberBright normal-case tracking-normal truncate">
             {task?.tmux_session || '—'}
           </span>
-          {task ? <span className="text-text-dim font-mono normal-case">@ {task.host_id}:{task.project_path}</span> : null}
+          {task ? <span className="hidden sm:inline text-text-dim font-mono normal-case truncate">@ {task.host_id}:{task.project_path}</span> : null}
         </div>
-        <span className={
+        <span className={`shrink-0 ml-2 ${
           status === 'open' ? 'text-accent-green' :
           status === 'connecting' ? 'text-accent-amber' :
           status === 'error' ? 'text-accent-red' :
           'text-text-dim'
-        }>● {status}</span>
+        }`}>● {status}</span>
       </div>
       <div ref={containerRef} className="flex-1 min-h-0" />
     </div>

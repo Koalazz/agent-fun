@@ -14,7 +14,7 @@ const Terminal = dynamicImport(() => import('./Terminal'), { ssr: false });
 
 interface Props { basePath: string }
 
-type MobileTab = 'queue' | 'terminal' | 'detail';
+type MobileTab = 'queue' | 'terminal' | 'detail' | 'projects';
 
 export default function Dashboard({ basePath }: Props) {
   return (
@@ -99,8 +99,37 @@ function DashboardInner({ basePath }: Props) {
 
   const onPickProject = (p: Project) => { setNewPrefill(p); setShowNew(true); };
 
+  const runningCount = tasks.filter((t) => t.status === 'running').length;
+
+  const taskDetailProps = {
+    task: selectedTask,
+    onStart: startTask,
+    onStop: stopTask,
+    onDelete: deleteTask,
+    onPaste: pasteTask,
+    onMarkDone: markDoneTask,
+    onUpdate: updateTask,
+  };
+
+  const taskListProps = {
+    tasks,
+    selectedId: selectedTaskId,
+    onSelect: (id: string) => { setSelectedTaskId(id); setMobileTab('terminal'); },
+    onNew: () => { setNewPrefill(null); setShowNew(true); },
+  };
+
+  const sidebarProps = {
+    hosts,
+    projects,
+    selectedHost,
+    onSelectHost: setSelectedHost,
+    onPickProject,
+    onAddHostHint: () => alert('Edit config/hosts.json on the server, then restart.'),
+    onRefresh: () => { refreshHosts().catch(() => {}); refreshProjects().catch(() => {}); },
+  };
+
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col">
       <TopBar hosts={hosts} tasks={tasks} onLogout={async () => {
         await fetch(basePath + '/api/auth/login', { method: 'DELETE' });
         window.location.reload();
@@ -109,55 +138,45 @@ function DashboardInner({ basePath }: Props) {
         <div className="bg-accent-red/20 border-b border-accent-red text-accent-red px-3 py-1 text-xs font-mono">{error} <button className="ml-2 underline" onClick={() => setError(null)}>dismiss</button></div>
       ) : null}
 
-      <div className="md:hidden flex border-b border-line bg-bg-panel">
-        {(['queue', 'terminal', 'detail'] as MobileTab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setMobileTab(t)}
-            className={`flex-1 py-2 text-xs uppercase tracking-widest font-display font-semibold ${mobileTab === t ? 'text-accent-amberBright border-b-2 border-accent-amber' : 'text-text-dim'}`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex-1 min-h-0 grid md:grid-cols-[260px_1fr_360px] grid-cols-1 gap-2 p-2">
-        <div className={`min-h-0 ${mobileTab === 'queue' ? '' : 'hidden md:block'}`}>
-          <Sidebar
-            hosts={hosts}
-            projects={projects}
-            selectedHost={selectedHost}
-            onSelectHost={setSelectedHost}
-            onPickProject={onPickProject}
-            onAddHostHint={() => alert('Edit config/hosts.json on the server, then restart.')}
-            onRefresh={() => {
-              refreshHosts().catch(() => {});
-              refreshProjects().catch(() => {});
-            }}
-          />
+      {/* Mobile: single-panel per tab */}
+      <div className="md:hidden flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0">
+          {mobileTab === 'queue' && <TaskList {...taskListProps} />}
+          {mobileTab === 'terminal' && (
+            <Panel title="Terminal" className="h-full" bodyClass="h-[calc(100%-2.25rem)]">
+              <Terminal task={selectedTask} basePath={basePath} />
+            </Panel>
+          )}
+          {mobileTab === 'detail' && <TaskDetail {...taskDetailProps} />}
+          {mobileTab === 'projects' && <Sidebar {...sidebarProps} />}
         </div>
 
-        <div className={`min-h-0 grid grid-rows-[1fr_minmax(280px,1.4fr)] gap-2 ${mobileTab === 'queue' || mobileTab === 'terminal' ? '' : 'hidden md:grid'}`}>
-          <div className={`${mobileTab === 'queue' ? '' : 'hidden md:block'} min-h-0`}>
-            <TaskList tasks={tasks} selectedId={selectedTaskId} onSelect={(id) => { setSelectedTaskId(id); setMobileTab('terminal'); }} onNew={() => { setNewPrefill(null); setShowNew(true); }} />
+        {/* Mobile tab bar — bottom */}
+        <div className="flex border-t border-line bg-bg-panel shrink-0">
+          <MobileTabBtn label="Tasks" active={mobileTab === 'queue'} onClick={() => setMobileTab('queue')} badge={tasks.filter(t => t.status === 'queued').length || undefined} />
+          <MobileTabBtn label="Terminal" active={mobileTab === 'terminal'} onClick={() => setMobileTab('terminal')} badge={runningCount || undefined} accent={runningCount > 0} />
+          <MobileTabBtn label="Detail" active={mobileTab === 'detail'} onClick={() => setMobileTab('detail')} />
+          <MobileTabBtn label="Projects" active={mobileTab === 'projects'} onClick={() => setMobileTab('projects')} />
+        </div>
+      </div>
+
+      {/* Desktop: 3-column grid */}
+      <div className="hidden md:grid flex-1 min-h-0 md:grid-cols-[260px_1fr_360px] gap-2 p-2">
+        <div className="min-h-0">
+          <Sidebar {...sidebarProps} />
+        </div>
+        <div className="min-h-0 grid grid-rows-[1fr_minmax(280px,1.4fr)] gap-2">
+          <div className="min-h-0">
+            <TaskList {...taskListProps} />
           </div>
-          <div className={`${mobileTab === 'terminal' ? '' : 'hidden md:block'} min-h-0`}>
+          <div className="min-h-0">
             <Panel title="Terminal" className="h-full" bodyClass="h-[calc(100%-2.25rem)]">
               <Terminal task={selectedTask} basePath={basePath} />
             </Panel>
           </div>
         </div>
-
-        <div className={`min-h-0 ${mobileTab === 'detail' ? '' : 'hidden md:block'}`}>
-          <TaskDetail
-            task={selectedTask}
-            onStart={startTask}
-            onStop={stopTask}
-            onDelete={deleteTask}
-            onPaste={pasteTask}
-            onMarkDone={markDoneTask}
-            onUpdate={updateTask}
-          />
+        <div className="min-h-0">
+          <TaskDetail {...taskDetailProps} />
         </div>
       </div>
 
@@ -171,5 +190,21 @@ function DashboardInner({ basePath }: Props) {
         />
       ) : null}
     </div>
+  );
+}
+
+function MobileTabBtn({ label, active, onClick, badge, accent }: { label: string; active: boolean; onClick: () => void; badge?: number; accent?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative flex-1 py-3 text-xs uppercase tracking-widest font-display font-semibold transition-colors ${active ? 'text-accent-amberBright border-t-2 border-accent-amber -mt-px' : 'text-text-dim border-t-2 border-transparent -mt-px'}`}
+    >
+      {label}
+      {badge != null && badge > 0 ? (
+        <span className={`absolute top-1.5 right-[15%] text-[9px] font-mono px-1 rounded-full ${accent ? 'bg-accent-amber text-bg-base' : 'bg-bg-raised text-text-dim'}`}>
+          {badge}
+        </span>
+      ) : null}
+    </button>
   );
 }

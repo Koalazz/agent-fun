@@ -27,10 +27,10 @@ export default function TopBar({ hosts, tasks, onLogout }: Props) {
         <span className="text-accent-amberBright text-base font-display font-bold tracking-wider">AGENT‑FUN</span>
         <span className="text-text-dim text-[10px] uppercase tracking-widest">v0.1</span>
       </div>
-      <div className="flex items-center gap-4 px-4 border-r border-line">
-        <Stat label="HOSTS" value={`${hosts.filter(h => h.tmux).length}/${hosts.length}`} />
-        <Stat label="QUEUED" value={String(queued)} accent="blue" />
-        <Stat label="RUNNING" value={String(running)} accent="amber" />
+      <div className="flex items-center gap-3 px-3 border-r border-line">
+        <span className="hidden sm:flex items-baseline gap-1.5"><span className="label">HOSTS</span><span className="font-mono font-bold text-text">{hosts.filter(h => h.tmux).length}/{hosts.length}</span></span>
+        <Stat label="Q" value={String(queued)} accent="blue" />
+        <Stat label="RUN" value={String(running)} accent="amber" />
         <Stat label="DONE" value={String(done)} accent="green" />
       </div>
       <div className="flex-1" />
