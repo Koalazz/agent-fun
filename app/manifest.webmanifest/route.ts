@@ -9,7 +9,7 @@ export function GET() {
     short_name: 'agent-fun',
     start_url: (base || '') + '/',
     scope: (base || '') + '/',
-    display: 'standalone',
+    display: 'minimal-ui',
     background_color: '#081420',
     theme_color: '#081420',
     icons: [],

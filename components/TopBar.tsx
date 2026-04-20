@@ -34,8 +34,9 @@ export default function TopBar({ hosts, tasks, onLogout }: Props) {
         <Stat label="DONE" value={String(done)} accent="green" />
       </div>
       <div className="flex-1" />
-      <div className="flex items-center gap-4 pl-4 border-l border-line">
+      <div className="flex items-center gap-2 pl-3 border-l border-line">
         <span className="hidden sm:inline font-mono text-text-dim">{now.toISOString().slice(0, 19).replace('T', ' ')}Z</span>
+        <button onClick={() => window.location.reload()} className="btn md:hidden" title="Reload page" aria-label="Reload">↺</button>
         <button onClick={() => setHelpOpen(true)} className="btn" title="User manual" aria-label="Help">?</button>
         <button onClick={onLogout} className="btn">Logout</button>
       </div>
