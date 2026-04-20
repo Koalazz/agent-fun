@@ -52,8 +52,12 @@ function DashboardInner({ basePath }: Props) {
     refreshHosts().catch((e) => setError(String(e)));
     refreshProjects().catch((e) => setError(String(e)));
     refreshTasks().catch((e) => setError(String(e)));
-    const t = setInterval(() => { refreshTasks().catch(() => {}); }, 4000);
-    return () => clearInterval(t);
+    const tasksTimer = setInterval(() => { refreshTasks().catch(() => {}); }, 4000);
+    const metaTimer = setInterval(() => {
+      refreshHosts().catch(() => {});
+      refreshProjects().catch(() => {});
+    }, 30_000);
+    return () => { clearInterval(tasksTimer); clearInterval(metaTimer); };
   }, [refreshHosts, refreshProjects, refreshTasks]);
 
   const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedTaskId) || null, [tasks, selectedTaskId]);
@@ -126,6 +130,10 @@ function DashboardInner({ basePath }: Props) {
             onSelectHost={setSelectedHost}
             onPickProject={onPickProject}
             onAddHostHint={() => alert('Edit config/hosts.json on the server, then restart.')}
+            onRefresh={() => {
+              refreshHosts().catch(() => {});
+              refreshProjects().catch(() => {});
+            }}
           />
         </div>
 

@@ -9,9 +9,10 @@ interface Props {
   onSelectHost: (id: string | null) => void;
   onPickProject: (p: Project) => void;
   onAddHostHint: () => void;
+  onRefresh: () => void;
 }
 
-export default function Sidebar({ hosts, projects, selectedHost, onSelectHost, onPickProject, onAddHostHint }: Props) {
+export default function Sidebar({ hosts, projects, selectedHost, onSelectHost, onPickProject, onAddHostHint, onRefresh }: Props) {
   const visible = selectedHost ? projects.filter((p) => p.hostId === selectedHost) : projects;
   return (
     <div className="flex flex-col gap-2 h-full">
@@ -47,7 +48,7 @@ export default function Sidebar({ hosts, projects, selectedHost, onSelectHost, o
           })}
         </ul>
       </Panel>
-      <Panel title="Projects" badge={`${visible.length}`} className="flex-1 min-h-0">
+      <Panel title="Projects" badge={`${visible.length}`} className="flex-1 min-h-0" actions={<button className="btn" onClick={onRefresh} title="Rescan projects">↻</button>}>
         <div className="overflow-y-auto h-full max-h-[40vh] md:max-h-none">
           <ul className="text-sm">
             {visible.length === 0 ? <li className="px-3 py-2 text-text-dim italic">No projects.</li> : null}
