@@ -1,0 +1,10 @@
+[
+  {
+    "id": "lino",
+    "name": "lino",
+    "sshTarget": null,
+    "projectsDir": "/root/projects",
+    "badge": "PROD",
+    "color": "#f5a623"
+  }
+]
