@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import '@xterm/xterm/css/xterm.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body {
+  height: 100%;
+  background: #081420;
+  color: #c9d8e7;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(74,163,223,0.04) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(245,166,35,0.03) 0%, transparent 35%),
+    #081420;
+}
+
+@layer components {
+  .panel {
+    @apply bg-bg-panel border border-line rounded-sm shadow-panel relative;
+  }
+  .panel-header {
+    @apply px-3 py-1.5 border-b border-line text-text-dim text-[11px] uppercase tracking-[0.18em] font-display font-semibold flex items-center justify-between;
+  }
+  .panel-title-bar {
+    @apply absolute -top-px left-0 right-0 h-px bg-line-bright;
+  }
+  .label {
+    @apply text-[10px] uppercase tracking-[0.2em] text-text-dim font-display font-semibold;
+  }
+  .label-amber {
+    @apply text-[10px] uppercase tracking-[0.2em] text-accent-amber font-display font-semibold;
+  }
+  .data-row {
+    @apply font-mono text-sm text-text;
+  }
+  .btn {
+    @apply px-2.5 py-1 border border-line text-text bg-bg-raised hover:bg-bg-hover hover:border-line-bright text-xs uppercase tracking-wider font-display font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply px-2.5 py-1 border border-accent-amber text-accent-amberBright bg-accent-amber/10 hover:bg-accent-amber/20 text-xs uppercase tracking-wider font-display font-semibold transition-colors;
+  }
+  .btn-danger {
+    @apply px-2.5 py-1 border border-accent-red/60 text-accent-red bg-accent-red/5 hover:bg-accent-red/15 text-xs uppercase tracking-wider font-display font-semibold transition-colors;
+  }
+  .input {
+    @apply bg-bg-base border border-line text-text px-2 py-1 text-sm font-mono focus:border-accent-amber focus:outline-none w-full;
+  }
+  .pill {
+    @apply px-1.5 py-px border text-[10px] uppercase tracking-widest font-display font-semibold;
+  }
+  .pill-queued { @apply pill border-line-bright text-accent-blue bg-accent-blue/5; }
+  .pill-running { @apply pill border-accent-amber text-accent-amberBright bg-accent-amber/10; }
+  .pill-done { @apply pill border-accent-green/60 text-accent-green bg-accent-green/5; }
+  .pill-failed { @apply pill border-accent-red/60 text-accent-red bg-accent-red/5; }
+  .pill-archived { @apply pill border-line text-text-dim bg-bg-raised; }
+  .scanlines::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.015) 0,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 1;
+  }
+}
+
+.xterm-viewport::-webkit-scrollbar { width: 6px; }
+.xterm-viewport::-webkit-scrollbar-thumb { background: #2a4c6b; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #081420; }
+::-webkit-scrollbar-thumb { background: #1e3a55; }
+::-webkit-scrollbar-thumb:hover { background: #2a4c6b; }
