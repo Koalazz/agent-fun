@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { getHost } from '@/lib/hosts';
 import { killSession } from '@/lib/tmux';
 import type { TaskStatus } from '@/lib/db';
+import { startNextQueuedForProject } from '@/lib/auto-start';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,12 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: 'invalid json' }, { status: 400 });
   if (body.status) {
+    const t = getTask(id);
+    if (!t) return NextResponse.json({ error: 'not found' }, { status: 404 });
     setTaskStatus(id, body.status as TaskStatus);
+    if (body.status === 'done' || body.status === 'failed') {
+      startNextQueuedForProject(t.project_path).catch(() => {});
+    }
     return NextResponse.json({ task: getTask(id) });
   }
   const t = getTask(id);

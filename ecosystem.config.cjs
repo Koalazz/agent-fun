@@ -3,6 +3,7 @@ module.exports = {
     {
       name: 'agent-fun',
       script: 'server.mjs',
+      interpreter: '/root/.nvm/versions/node/v25.6.0/bin/node',
       cwd: '/root/projects/agent-fun',
       exec_mode: 'fork',
       instances: 1,

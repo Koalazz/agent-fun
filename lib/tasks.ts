@@ -13,6 +13,8 @@ const setSession = db.prepare(`UPDATE tasks SET tmux_session = ?, status = 'runn
 const finish = db.prepare(`UPDATE tasks SET status = ?, finished_at = ?, updated_at = ? WHERE id = ?`);
 const updateFields = db.prepare(`UPDATE tasks SET title = ?, prompt = ?, notes = ?, priority = ?, updated_at = ? WHERE id = ?`);
 const del = db.prepare(`DELETE FROM tasks WHERE id = ?`);
+const runningForProject = db.prepare(`SELECT * FROM tasks WHERE project_path = ? AND status = 'running' LIMIT 1`);
+const nextQueuedForProject = db.prepare(`SELECT * FROM tasks WHERE project_path = ? AND status = 'queued' ORDER BY priority DESC, created_at ASC LIMIT 1`);
 
 export interface CreateTaskInput {
   title: string;
@@ -77,4 +79,12 @@ export function updateTask(id: string, input: UpdateTaskInput): TaskRow | undefi
 
 export function deleteTask(id: string): void {
   del.run(id);
+}
+
+export function getRunningTaskForProject(projectPath: string): TaskRow | undefined {
+  return runningForProject.get(projectPath) as TaskRow | undefined;
+}
+
+export function getNextQueuedForProject(projectPath: string): TaskRow | undefined {
+  return nextQueuedForProject.get(projectPath) as TaskRow | undefined;
 }

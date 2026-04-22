@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Host, Project, Task } from '@/lib/types';
 import AuthGate from './AuthGate';
 import TopBar from './TopBar';
@@ -61,6 +61,29 @@ function DashboardInner({ basePath }: Props) {
   }, [refreshHosts, refreshProjects, refreshTasks]);
 
   const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedTaskId) || null, [tasks, selectedTaskId]);
+
+  const orderedTaskIds = useMemo(() => {
+    const ORDER: Task['status'][] = ['running', 'queued', 'failed', 'done', 'archived'];
+    return ORDER.flatMap((s) => tasks.filter((t) => t.status === s)).map((t) => t.id);
+  }, [tasks]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+      if (active && active.closest('.xterm')) return;
+      if (orderedTaskIds.length === 0) return;
+      e.preventDefault();
+      const idx = selectedTaskId ? orderedTaskIds.indexOf(selectedTaskId) : -1;
+      let next: number;
+      if (e.key === 'ArrowUp') next = idx <= 0 ? orderedTaskIds.length - 1 : idx - 1;
+      else next = idx >= orderedTaskIds.length - 1 ? 0 : idx + 1;
+      setSelectedTaskId(orderedTaskIds[next]);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [orderedTaskIds, selectedTaskId]);
 
   const createTask = useCallback(async (input: any) => {
     const r = await api('/api/tasks', { method: 'POST', body: JSON.stringify(input) });

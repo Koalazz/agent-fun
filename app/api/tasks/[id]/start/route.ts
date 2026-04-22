@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTask, attachSession } from '@/lib/tasks';
+import { getTask, attachSession, getRunningTaskForProject } from '@/lib/tasks';
 import { getHost } from '@/lib/hosts';
 import { tmuxSessionName, sessionExists, createSession, ensureTmuxAvailable, startClaudeWithPrompt } from '@/lib/tmux';
 import { requireAuth } from '@/lib/auth';
@@ -14,6 +14,11 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (!task) return NextResponse.json({ error: 'not found' }, { status: 404 });
   const host = getHost(task.host_id);
   if (!host) return NextResponse.json({ error: 'unknown host' }, { status: 400 });
+
+  const running = getRunningTaskForProject(task.project_path);
+  if (running && running.id !== task.id) {
+    return NextResponse.json({ task: getTask(task.id), queued: true, reason: 'another task is already running for this project' });
+  }
 
   if (!(await ensureTmuxAvailable(host))) {
     return NextResponse.json({ error: `tmux not available on host ${host.id}` }, { status: 400 });
