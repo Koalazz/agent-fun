@@ -39,6 +39,11 @@ export default function TaskCard({ task, active, onClick }: Props) {
           <div className="text-[11px] text-text-dim font-mono truncate mt-0.5">
             {task.host_id} · {task.project_name}
           </div>
+          <div className="text-[10px] font-mono mt-0.5">
+            <span className={task.agent === 'claude' ? 'text-accent-amberBright' : 'text-accent-green'}>
+              {task.agent === 'claude' ? '◆ claude' : '⬡ codex'}
+            </span>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <span className={pillClass[task.status]}>{task.status}</span>

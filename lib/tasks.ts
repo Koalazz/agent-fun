@@ -2,8 +2,8 @@ import { nanoid } from 'nanoid';
 import db, { type TaskRow, type TaskStatus } from './db';
 
 const insert = db.prepare(`
-  INSERT INTO tasks (id, title, prompt, notes, host_id, project_path, project_name, status, created_at, updated_at, priority)
-  VALUES (@id, @title, @prompt, @notes, @host_id, @project_path, @project_name, 'queued', @now, @now, @priority)
+  INSERT INTO tasks (id, title, prompt, notes, host_id, project_path, project_name, status, created_at, updated_at, priority, agent)
+  VALUES (@id, @title, @prompt, @notes, @host_id, @project_path, @project_name, 'queued', @now, @now, @priority, @agent)
 `);
 
 const all = db.prepare(`SELECT * FROM tasks ORDER BY status='running' DESC, status='queued' DESC, priority DESC, created_at DESC`);
@@ -24,6 +24,7 @@ export interface CreateTaskInput {
   projectPath: string;
   projectName: string;
   priority?: number;
+  agent?: 'claude' | 'codex';
 }
 
 export function createTask(input: CreateTaskInput): TaskRow {
@@ -38,6 +39,7 @@ export function createTask(input: CreateTaskInput): TaskRow {
     project_path: input.projectPath,
     project_name: input.projectName,
     priority: input.priority ?? 0,
+    agent: input.agent || 'codex',
     now,
   });
   return byId.get(id) as TaskRow;

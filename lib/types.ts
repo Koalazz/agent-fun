@@ -1,3 +1,5 @@
+export type AgentType = 'claude' | 'codex';
+
 export interface Task {
   id: string;
   title: string;
@@ -13,6 +15,7 @@ export interface Task {
   started_at: number | null;
   finished_at: number | null;
   priority: number;
+  agent: AgentType;
 }
 
 export interface Host {

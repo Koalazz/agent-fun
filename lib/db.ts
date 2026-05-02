@@ -25,11 +25,17 @@ db.exec(`
     updated_at INTEGER NOT NULL,
     started_at INTEGER,
     finished_at INTEGER,
-    priority INTEGER NOT NULL DEFAULT 0
+    priority INTEGER NOT NULL DEFAULT 0,
+    agent TEXT NOT NULL DEFAULT 'codex'
   );
   CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
   CREATE INDEX IF NOT EXISTS idx_tasks_host ON tasks(host_id);
 `);
+
+// Migration: add agent column to existing databases
+try {
+  db.exec(`ALTER TABLE tasks ADD COLUMN agent TEXT NOT NULL DEFAULT 'codex'`);
+} catch { /* column already exists */ }
 
 export type TaskStatus = 'queued' | 'running' | 'done' | 'failed' | 'archived';
 
@@ -48,6 +54,7 @@ export interface TaskRow {
   started_at: number | null;
   finished_at: number | null;
   priority: number;
+  agent: 'claude' | 'codex';
 }
 
 export default db;

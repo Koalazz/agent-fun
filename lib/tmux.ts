@@ -61,6 +61,15 @@ export async function startClaudeWithPrompt(
   name: string,
   prompt: string,
 ): Promise<void> {
-  const claudeCmd = prompt.trim() ? `claude ${shellQuote(prompt)}` : 'claude';
-  await execOnHost(host, `tmux send-keys -t ${shellQuote(name)} -l ${shellQuote(claudeCmd)} && tmux send-keys -t ${shellQuote(name)} Enter`, { timeoutMs: 8000 });
+  await startAgentWithPrompt(host, name, prompt, 'claude');
+}
+
+export async function startAgentWithPrompt(
+  host: HostConfig,
+  name: string,
+  prompt: string,
+  agent: 'claude' | 'codex' = 'codex',
+): Promise<void> {
+  const cmd = prompt.trim() ? `${agent} ${shellQuote(prompt)}` : agent;
+  await execOnHost(host, `tmux send-keys -t ${shellQuote(name)} -l ${shellQuote(cmd)} && tmux send-keys -t ${shellQuote(name)} Enter`, { timeoutMs: 8000 });
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTask, attachSession, getRunningTaskForProject } from '@/lib/tasks';
 import { getHost } from '@/lib/hosts';
-import { tmuxSessionName, sessionExists, createSession, ensureTmuxAvailable, startClaudeWithPrompt } from '@/lib/tmux';
+import { tmuxSessionName, sessionExists, createSession, ensureTmuxAvailable, startAgentWithPrompt } from '@/lib/tmux';
 import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (!exists) {
     await createSession(host, sessionName, task.project_path);
     if (autoRun) {
-      await startClaudeWithPrompt(host, sessionName, task.prompt);
+      await startAgentWithPrompt(host, sessionName, task.prompt, task.agent || 'codex');
     }
   }
   attachSession(task.id, sessionName);

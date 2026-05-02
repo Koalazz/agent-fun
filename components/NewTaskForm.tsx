@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import type { Host, Project } from '@/lib/types';
+import type { AgentType, Host, Project } from '@/lib/types';
 
 interface Props {
   hosts: Host[];
@@ -15,6 +15,7 @@ interface Props {
     projectPath: string;
     projectName: string;
     autoStart: boolean;
+    agent: AgentType;
   }) => Promise<void>;
 }
 
@@ -25,6 +26,7 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
   const [hostId, setHostId] = useState(initialProject?.hostId || hosts[0]?.id || '');
   const [projectPath, setProjectPath] = useState(initialProject?.path || '');
   const [autoStart, setAutoStart] = useState(true);
+  const [agent, setAgent] = useState<AgentType>('codex');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -60,6 +62,7 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
                 projectPath: project.path,
                 projectName: project.name,
                 autoStart,
+                agent,
               });
             } catch (e: any) {
               setErr(e.message || String(e));
@@ -84,12 +87,33 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
               </select>
             </Field>
           </div>
-          <Field label="Prompt for Claude">
+          <div>
+            <div className="label-amber mb-1">Agent</div>
+            <div className="flex gap-2">
+              {(['codex', 'claude'] as AgentType[]).map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setAgent(a)}
+                  className={`flex-1 py-1.5 text-sm font-mono font-semibold border transition-colors rounded-sm ${
+                    agent === a
+                      ? a === 'codex'
+                        ? 'bg-accent-green/20 border-accent-green text-accent-green'
+                        : 'bg-accent-amber/20 border-accent-amber text-accent-amberBright'
+                      : 'border-line text-text-dim hover:border-line-bright hover:text-text'
+                  }`}
+                >
+                  {a === 'codex' ? '⬡ Codex' : '◆ Claude'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Field label={`Prompt for ${agent === 'codex' ? 'Codex' : 'Claude'}`}>
             <textarea
               className="input min-h-[100px] resize-y"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="The first message to send to Claude. Will be pasted into the session if Auto-start is on."
+              placeholder={`The first message to send to ${agent === 'codex' ? 'Codex' : 'Claude'}. Will be pasted into the session if Auto-start is on.`}
             />
           </Field>
           <Field label="Notes (private)">
@@ -97,7 +121,7 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
           </Field>
           <label className="flex items-center gap-2 text-sm font-mono text-text-dim">
             <input type="checkbox" checked={autoStart} onChange={(e) => setAutoStart(e.target.checked)} />
-            Auto-start tmux + run claude with prompt
+            Auto-start tmux + run {agent} with prompt
           </label>
           {err ? <div className="text-accent-red text-sm font-mono">{err}</div> : null}
           <div className="flex gap-2 justify-end pt-2 border-t border-line">

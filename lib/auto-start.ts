@@ -1,6 +1,6 @@
 import { getNextQueuedForProject, attachSession } from './tasks';
 import { getHost } from './hosts';
-import { tmuxSessionName, ensureTmuxAvailable, sessionExists, createSession, startClaudeWithPrompt } from './tmux';
+import { tmuxSessionName, ensureTmuxAvailable, sessionExists, createSession, startAgentWithPrompt } from './tmux';
 
 export async function startNextQueuedForProject(projectPath: string): Promise<boolean> {
   const next = getNextQueuedForProject(projectPath);
@@ -12,7 +12,7 @@ export async function startNextQueuedForProject(projectPath: string): Promise<bo
   const exists = await sessionExists(host, sessionName);
   if (!exists) {
     await createSession(host, sessionName, next.project_path);
-    await startClaudeWithPrompt(host, sessionName, next.prompt);
+    await startAgentWithPrompt(host, sessionName, next.prompt, next.agent || 'codex');
   }
   attachSession(next.id, sessionName);
   return true;

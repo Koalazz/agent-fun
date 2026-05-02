@@ -87,6 +87,12 @@ export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, o
             <div className="label">Title</div>
             <div className="text-text font-display text-lg">{task.title}</div>
           </div>
+          <div className="flex items-baseline justify-between gap-3 border-b border-line/40 pb-1">
+            <span className="label">Agent</span>
+            <span className={`font-mono text-sm font-semibold ${task.agent === 'claude' ? 'text-accent-amberBright' : 'text-accent-green'}`}>
+              {task.agent === 'claude' ? '◆ claude' : '⬡ codex'}
+            </span>
+          </div>
           <Row label="Host" value={task.host_id} />
           <Row label="Project" value={task.project_name} mono />
           <Row label="Path" value={task.project_path} mono small />
