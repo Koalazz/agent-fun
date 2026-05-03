@@ -47,8 +47,32 @@ export default function Terminal({ task, basePath }: Props) {
     setTimeout(() => fit.fit(), 0);
     const onResize = () => { try { fit.fit(); } catch {} };
     window.addEventListener('resize', onResize);
+
+    // Touch scroll for mobile
+    const el = containerRef.current;
+    let touchY = 0;
+    let touchAccum = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      touchY = e.touches[0].clientY;
+      touchAccum = 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0].clientY;
+      touchAccum += touchY - y;
+      touchY = y;
+      const lines = Math.trunc(touchAccum / 15);
+      if (lines !== 0) {
+        term.scrollLines(lines);
+        touchAccum -= lines * 15;
+      }
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: true });
+
     return () => {
       window.removeEventListener('resize', onResize);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
       term.dispose();
       termRef.current = null;
       fitRef.current = null;

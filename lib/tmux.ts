@@ -26,7 +26,13 @@ export async function createSession(
   name: string,
   workingDir: string,
 ): Promise<void> {
-  const cmd = `mkdir -p ${shellQuote(workingDir)} && tmux new-session -d -s ${shellQuote(name)} -c ${shellQuote(workingDir)} -x 200 -y 50`;
+  const q = shellQuote(name);
+  const cmd = [
+    `mkdir -p ${shellQuote(workingDir)}`,
+    `tmux new-session -d -s ${q} -c ${shellQuote(workingDir)} -x 200 -y 50`,
+    `tmux set-option -t ${q} mouse on`,
+    `tmux set-option -t ${q} history-limit 50000`,
+  ].join(' && ');
   const r = await execOnHost(host, cmd, { timeoutMs: 10000 });
   if (r.code !== 0) throw new Error(`tmux new-session failed: ${r.stderr || r.stdout}`);
 }
