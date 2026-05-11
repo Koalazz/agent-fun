@@ -6,7 +6,7 @@ import TopBar from './TopBar';
 import Sidebar from './Sidebar';
 import TaskList from './TaskList';
 import TaskDetail from './TaskDetail';
-import NewTaskForm from './NewTaskForm';
+import NewTaskForm, { type NewTaskPrefill } from './NewTaskForm';
 import Panel from './Panel';
 import dynamicImport from 'next/dynamic';
 
@@ -32,6 +32,7 @@ function DashboardInner({ basePath }: Props) {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [newPrefill, setNewPrefill] = useState<Project | null>(null);
+  const [taskPrefill, setTaskPrefill] = useState<NewTaskPrefill | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>('queue');
   const [error, setError] = useState<string | null>(null);
 
@@ -120,7 +121,20 @@ function DashboardInner({ basePath }: Props) {
     await api(`/api/tasks/${task.id}`, { method: 'PATCH', body: JSON.stringify(fields) }); await refreshTasks();
   }, [api, refreshTasks]);
 
-  const onPickProject = (p: Project) => { setNewPrefill(p); setShowNew(true); };
+  const onPickProject = (p: Project) => { setTaskPrefill(null); setNewPrefill(p); setShowNew(true); };
+  const cloneTask = useCallback((task: Task) => {
+    setNewPrefill({ hostId: task.host_id, path: task.project_path, name: task.project_name, isGit: false });
+    setTaskPrefill({
+      title: task.title,
+      prompt: task.prompt,
+      notes: task.notes,
+      hostId: task.host_id,
+      projectPath: task.project_path,
+      agent: task.agent,
+      autoStart: true,
+    });
+    setShowNew(true);
+  }, []);
 
   const runningCount = tasks.filter((t) => t.status === 'running').length;
 
@@ -132,13 +146,14 @@ function DashboardInner({ basePath }: Props) {
     onPaste: pasteTask,
     onMarkDone: markDoneTask,
     onUpdate: updateTask,
+    onClone: cloneTask,
   };
 
   const taskListProps = {
     tasks,
     selectedId: selectedTaskId,
     onSelect: (id: string) => { setSelectedTaskId(id); setMobileTab('terminal'); },
-    onNew: () => { setNewPrefill(null); setShowNew(true); },
+    onNew: () => { setTaskPrefill(null); setNewPrefill(null); setShowNew(true); },
   };
 
   const sidebarProps = {
@@ -208,6 +223,7 @@ function DashboardInner({ basePath }: Props) {
           hosts={hosts}
           projects={projects}
           initialProject={newPrefill}
+          initialValues={taskPrefill}
           onCancel={() => setShowNew(false)}
           onCreate={createTask}
         />

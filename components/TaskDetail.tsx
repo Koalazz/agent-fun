@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Task } from '@/lib/types';
 import Panel from './Panel';
 
@@ -11,12 +11,14 @@ interface Props {
   onPaste: (task: Task) => Promise<void>;
   onMarkDone: (task: Task) => Promise<void>;
   onUpdate: (task: Task, fields: Partial<Pick<Task, 'title' | 'prompt' | 'notes'>>) => Promise<void>;
+  onClone: (task: Task) => void;
 }
 
-export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, onMarkDone, onUpdate }: Props) {
+export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, onMarkDone, onUpdate, onClone }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Pick<Task, 'title' | 'prompt' | 'notes'> | null>(null);
   const [busy, setBusy] = useState(false);
+  const composingRef = useRef(false);
 
   if (!task) {
     return (
@@ -49,6 +51,7 @@ export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, o
             </>
           )}
           <button className="btn" onClick={startEdit}>Edit</button>
+          <button className="btn" onClick={() => onClone(task)}>Clone</button>
           <button className="btn-danger" onClick={async () => {
             if (!confirm('Delete task and kill its tmux session?')) return;
             setBusy(true); await onDelete(task); setBusy(false);
@@ -68,13 +71,13 @@ export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, o
           }}
         >
           <Field label="Title">
-            <input className="input" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+            <input className="input" value={draft.title} onChange={(e) => { if (!composingRef.current) setDraft({ ...draft, title: e.target.value }); }} onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={(e) => { composingRef.current = false; setDraft({ ...draft, title: e.currentTarget.value }); }} />
           </Field>
           <Field label="Prompt">
-            <textarea className="input min-h-[120px] resize-y" value={draft.prompt} onChange={(e) => setDraft({ ...draft, prompt: e.target.value })} />
+            <textarea className="input min-h-[120px] resize-y" value={draft.prompt} onChange={(e) => { if (!composingRef.current) setDraft({ ...draft, prompt: e.target.value }); }} onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={(e) => { composingRef.current = false; setDraft({ ...draft, prompt: e.currentTarget.value }); }} />
           </Field>
           <Field label="Notes">
-            <textarea className="input min-h-[60px] resize-y" value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
+            <textarea className="input min-h-[60px] resize-y" value={draft.notes} onChange={(e) => { if (!composingRef.current) setDraft({ ...draft, notes: e.target.value }); }} onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={(e) => { composingRef.current = false; setDraft({ ...draft, notes: e.currentTarget.value }); }} />
           </Field>
           <div className="flex gap-2 justify-end">
             <button type="button" className="btn" onClick={() => setEditing(false)}>Cancel</button>

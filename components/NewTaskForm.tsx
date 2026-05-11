@@ -1,11 +1,22 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AgentType, Host, Project } from '@/lib/types';
+
+export interface NewTaskPrefill {
+  title?: string;
+  prompt?: string;
+  notes?: string;
+  hostId?: string;
+  projectPath?: string;
+  agent?: AgentType;
+  autoStart?: boolean;
+}
 
 interface Props {
   hosts: Host[];
   projects: Project[];
   initialProject: Project | null;
+  initialValues?: NewTaskPrefill | null;
   onCancel: () => void;
   onCreate: (input: {
     title: string;
@@ -19,16 +30,22 @@ interface Props {
   }) => Promise<void>;
 }
 
-export default function NewTaskForm({ hosts, projects, initialProject, onCancel, onCreate }: Props) {
-  const [title, setTitle] = useState('');
-  const [prompt, setPrompt] = useState('');
-  const [notes, setNotes] = useState('');
-  const [hostId, setHostId] = useState(initialProject?.hostId || hosts[0]?.id || '');
-  const [projectPath, setProjectPath] = useState(initialProject?.path || '');
-  const [autoStart, setAutoStart] = useState(true);
-  const [agent, setAgent] = useState<AgentType>('codex');
+export default function NewTaskForm({ hosts, projects, initialProject, initialValues, onCancel, onCreate }: Props) {
+  const [title, setTitle] = useState(initialValues?.title || '');
+  const [prompt, setPrompt] = useState(initialValues?.prompt || '');
+  const [notes, setNotes] = useState(initialValues?.notes || '');
+  const [hostId, setHostId] = useState(initialValues?.hostId || initialProject?.hostId || hosts[0]?.id || '');
+  const [projectPath, setProjectPath] = useState(initialValues?.projectPath || initialProject?.path || '');
+  const [autoStart, setAutoStart] = useState(initialValues?.autoStart ?? true);
+  const [agent, setAgent] = useState<AgentType>(initialValues?.agent || 'codex');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const composingRef = useRef(false);
+
+  function updateTitle(value: string) {
+    setTitle(value);
+    setPrompt(value);
+  }
 
   const projectsForHost = projects.filter((p) => p.hostId === hostId);
   const project = projectsForHost.find((p) => p.path === projectPath) || projectsForHost[0];
@@ -42,7 +59,7 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
       <div className="panel w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
         <div className="panel-title-bar" />
         <div className="panel-header">
-          <span className="text-accent-amberBright">▸ New Task</span>
+          <span className="text-accent-amberBright">▸ {initialValues ? 'Clone Task' : 'New Task'}</span>
           <button className="btn" onClick={onCancel}>×</button>
         </div>
         <form
@@ -72,7 +89,7 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
           }}
         >
           <Field label="Title">
-            <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus placeholder="Fix dice overlap on mobile" />
+            <input className="input" value={title} onChange={(e) => { if (!composingRef.current) updateTitle(e.target.value); }} onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={(e) => { composingRef.current = false; updateTitle(e.currentTarget.value); }} autoFocus placeholder="Fix dice overlap on mobile" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Host">
@@ -112,12 +129,14 @@ export default function NewTaskForm({ hosts, projects, initialProject, onCancel,
             <textarea
               className="input min-h-[100px] resize-y"
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={(e) => { if (!composingRef.current) setPrompt(e.target.value); }}
+              onCompositionStart={() => { composingRef.current = true; }}
+              onCompositionEnd={(e) => { composingRef.current = false; setPrompt(e.currentTarget.value); }}
               placeholder={`The first message to send to ${agent === 'codex' ? 'Codex' : 'Claude'}. Will be pasted into the session if Auto-start is on.`}
             />
           </Field>
           <Field label="Notes (private)">
-            <textarea className="input min-h-[50px] resize-y" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <textarea className="input min-h-[50px] resize-y" value={notes} onChange={(e) => { if (!composingRef.current) setNotes(e.target.value); }} onCompositionStart={() => { composingRef.current = true; }} onCompositionEnd={(e) => { composingRef.current = false; setNotes(e.currentTarget.value); }} />
           </Field>
           <label className="flex items-center gap-2 text-sm font-mono text-text-dim">
             <input type="checkbox" checked={autoStart} onChange={(e) => setAutoStart(e.target.checked)} />

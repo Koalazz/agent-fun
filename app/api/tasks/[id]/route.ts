@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTask, updateTask, deleteTask, setTaskStatus } from '@/lib/tasks';
+import { getTask, updateTask, deleteTask, setTaskStatus, finishTask } from '@/lib/tasks';
 import { requireAuth } from '@/lib/auth';
 import { getHost } from '@/lib/hosts';
 import { killSession } from '@/lib/tmux';
@@ -26,9 +26,15 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (body.status) {
     const t = getTask(id);
     if (!t) return NextResponse.json({ error: 'not found' }, { status: 404 });
-    setTaskStatus(id, body.status as TaskStatus);
     if (body.status === 'done' || body.status === 'failed') {
+      if (t.tmux_session) {
+        const host = getHost(t.host_id);
+        if (host) await killSession(host, t.tmux_session).catch(() => {});
+      }
+      finishTask(id, body.status as 'done' | 'failed');
       startNextQueuedForProject(t.project_path).catch(() => {});
+    } else {
+      setTaskStatus(id, body.status as TaskStatus);
     }
     return NextResponse.json({ task: getTask(id) });
   }
