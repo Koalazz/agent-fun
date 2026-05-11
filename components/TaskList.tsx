@@ -27,7 +27,7 @@ export default function TaskList({ tasks, selectedId, onSelect, onNew }: Props) 
       badge={`${tasks.length}`}
       actions={<button className="btn-primary" onClick={onNew}>+ New</button>}
       className="h-full"
-      bodyClass="overflow-y-auto h-[calc(100%-2.25rem)]"
+      bodyClass="overflow-y-auto"
     >
       {tasks.length === 0 ? (
         <div className="p-6 text-center text-text-dim italic">

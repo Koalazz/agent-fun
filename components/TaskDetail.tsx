@@ -38,7 +38,7 @@ export default function TaskDetail({ task, onStart, onStop, onDelete, onPaste, o
       title={`Task ${task.id}`}
       badge={task.status}
       className="h-full"
-      bodyClass="p-3 overflow-y-auto h-[calc(100%-2.25rem)] space-y-3"
+      bodyClass="p-3 overflow-y-auto space-y-3"
       actions={
         <div className="flex gap-1">
           {task.status !== 'running' ? (

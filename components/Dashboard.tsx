@@ -181,7 +181,7 @@ function DashboardInner({ basePath }: Props) {
         <div className="flex-1 min-h-0">
           {mobileTab === 'queue' && <TaskList {...taskListProps} />}
           {mobileTab === 'terminal' && (
-            <Panel title="Terminal" className="h-full" bodyClass="h-[calc(100%-2.25rem)]">
+            <Panel title="Terminal" className="h-full">
               <Terminal task={selectedTask} basePath={basePath} />
             </Panel>
           )}
@@ -200,20 +200,20 @@ function DashboardInner({ basePath }: Props) {
 
       {/* Desktop: 3-column grid */}
       <div className="hidden md:grid flex-1 min-h-0 md:grid-cols-[260px_1fr_360px] gap-2 p-2">
-        <div className="min-h-0">
+        <div className="min-h-0 min-w-0">
           <Sidebar {...sidebarProps} />
         </div>
-        <div className="min-h-0 grid grid-rows-[1fr_minmax(280px,1.4fr)] gap-2">
-          <div className="min-h-0">
+        <div className="min-h-0 min-w-0 grid grid-rows-[1fr_minmax(280px,1.4fr)] gap-2">
+          <div className="min-h-0 min-w-0">
             <TaskList {...taskListProps} />
           </div>
-          <div className="min-h-0">
-            <Panel title="Terminal" className="h-full" bodyClass="h-[calc(100%-2.25rem)]">
+          <div className="min-h-0 min-w-0">
+            <Panel title="Terminal" className="h-full">
               <Terminal task={selectedTask} basePath={basePath} />
             </Panel>
           </div>
         </div>
-        <div className="min-h-0">
+        <div className="min-h-0 min-w-0">
           <TaskDetail {...taskDetailProps} />
         </div>
       </div>
