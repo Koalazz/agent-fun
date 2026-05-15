@@ -37,7 +37,17 @@ export default function Terminal({ task, basePath }: Props) {
       allowProposedApi: true,
       cursorBlink: true,
       scrollback: 5000,
+      scrollOnUserInput: false,
     });
+    const keepScrollbackHandler = (params: (number | number[])[]): boolean => {
+      const privateModes = params.flatMap((param) => Array.isArray(param) ? param : [param]);
+      if (privateModes.some((mode) => mode === 47 || mode === 1047 || mode === 1048 || mode === 1049)) {
+        return true;
+      }
+      return false;
+    };
+    term.parser.registerCsiHandler({ prefix: '?', final: 'h' }, keepScrollbackHandler);
+    term.parser.registerCsiHandler({ prefix: '?', final: 'l' }, keepScrollbackHandler);
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.loadAddon(new WebLinksAddon());
